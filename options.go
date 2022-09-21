@@ -24,6 +24,7 @@ import (
 	"strings"
 	"time"
 
+	"code.uber.internal/base/testing/knownleaks"
 	"go.uber.org/goleak/internal/stack"
 )
 
@@ -113,6 +114,7 @@ func buildOpts(options ...Option) *opts {
 		isSyscallStack,
 		isStdLibStack,
 		isTraceStack,
+		isKnownLeak,
 	)
 	for _, option := range options {
 		option.apply(opts)
@@ -175,4 +177,8 @@ func isStdLibStack(s stack.Stack) bool {
 
 	// Using signal.Notify will start a runtime goroutine.
 	return strings.Contains(s.Full(), "runtime.ensureSigM")
+}
+
+func isKnownLeak(s stack.Stack) bool {
+	return knownleaks.IsLeaky(s.FirstFunction())
 }
